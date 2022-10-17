@@ -7,7 +7,7 @@ import (
 	"github.com/MattiasHenders/palette-town-api/src/server"
 )
 
-func Main() {
+func main() {
 
 	fmt.Println("Getting config...")
 	config := config.GetConfig()
