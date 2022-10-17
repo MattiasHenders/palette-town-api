@@ -78,6 +78,6 @@ func Start(config *config.Config) {
 		w.Write([]byte("OK"))
 	})
 
-	fmt.Printf("Running server on port %s...", config.Server.Port)
+	fmt.Printf("Running server on port %s...\n", config.Server.Port)
 	http.ListenAndServe(fmt.Sprintf(":%s", config.Server.Port), r)
 }
