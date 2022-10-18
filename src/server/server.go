@@ -47,7 +47,7 @@ func Start(config *config.Config) {
 	r.Group(func(r chi.Router) {
 
 		r.Get("/api/colour/random", s.Handler(h.GetRandomColourPaletteHandler()))
-		r.Get("/api/colour/prompt/{colors}", s.Handler(h.GetColourPromptColourPaletteHandler()))
+		r.Get("/api/colour/prompt/{colours}", s.Handler(h.GetColourPromptColourPaletteHandler()))
 		// r.Get("/api/colour/prompt/{words}", s.Handler(h.GetRandomColourPaletteHandler()))
 	})
 
