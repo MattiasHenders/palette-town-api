@@ -34,7 +34,7 @@ func GetColourPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.R
 	return func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
 
 		// Get the colours from query
-		colours := server_helpers.GetURLParam(r, "colours")
+		colours := server_helpers.GetQueryParam(r, "colours")
 		if colours == nil {
 			return errors.NewHTTPError(nil, http.StatusBadRequest, "Missing colours")
 		}

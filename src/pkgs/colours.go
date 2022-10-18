@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/MattiasHenders/palette-town-api/config"
@@ -47,6 +48,8 @@ func GetColourPromptColourPalette(colours string) (*models.ColourPalette, *error
 
 	// Get URL to Colorminds ML
 	colormindURL := config.GetConfig().API.ColorMindURL
+
+	// Parse prompt data
 	colorsPromptData, inputErr := GetColourPalettePromptData(colours)
 	if inputErr != nil {
 		return nil, errors.NewHTTPError(inputErr, http.StatusBadRequest, inputErr.Error())
@@ -111,9 +114,26 @@ func GetColourPalettePromptData(rawColours string) (string, error) {
 
 	colours := strings.Split(rawColours, ",")
 
-	fmt.Println(colours)
+	//Check we have 5 or less colours
+	if len(colours) > 5 {
+		return "", fmt.Errorf("Max amount of colours allowed is 5, you provided %d", len(colours))
+	}
 
+	// Validate each colour
+	for _, colour := range colours {
+		err := ValidateHexCode(colour)
+		if err {
+			return "", fmt.Errorf("%s is not a valid hex code.", colour)
+		}
+	}
+
+	// TODO: Convert each hex into RGB
 	data := `{"input":[[44,43,44],[90,83,82],"N","N","N"],"model":"default"}`
 
 	return data, nil
+}
+
+func ValidateHexCode(hexCode string) bool {
+	match, _ := regexp.MatchString("^#(?:[0-9a-fA-F]{3}){1,2}$", hexCode)
+	return match
 }
