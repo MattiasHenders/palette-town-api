@@ -1,6 +1,8 @@
 package server_helpers
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -88,4 +90,30 @@ func GetQueryParam(r *http.Request, field string) *string {
 	}
 
 	return &param
+}
+
+func MakeInternalRequest(method string, url string, rawData string) ([]byte, *errors.HTTPError) {
+
+	// Build request
+	client := &http.Client{}
+	var data = strings.NewReader(rawData)
+	req, err := http.NewRequest(method, url, data)
+	if err != nil {
+		return nil, errors.NewHTTPError(err, http.StatusInternalServerError, fmt.Sprintf("Error building request to %s", url))
+	}
+
+	// Set headers and make request
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.NewHTTPError(err, http.StatusInternalServerError, fmt.Sprintf("Failed to make internal request to %s", url))
+	}
+	defer resp.Body.Close()
+	bodyText, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.NewHTTPError(err, http.StatusInternalServerError, fmt.Sprintf("Failed to read response from internal request to %s", url))
+	}
+
+	// Return body text as byte array
+	return bodyText, nil
 }

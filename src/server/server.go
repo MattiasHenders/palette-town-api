@@ -46,7 +46,7 @@ func Start(config *config.Config) {
 	// Routes that require no authentication here...
 	r.Group(func(r chi.Router) {
 
-		r.Get("/api/colour/random", s.Handler(h.GetRandomColorPaletteHandler()))
+		r.Get("/api/colour/random", s.Handler(h.GetRandomColourPaletteHandler()))
 	})
 
 	// Routes that require user authentication here...

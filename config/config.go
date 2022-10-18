@@ -10,6 +10,7 @@ import (
 type Config struct {
 	DB     *DBConfig
 	Server *ServerConfig
+	API    *APIConfig
 }
 
 type ServerConfig struct {
@@ -26,6 +27,10 @@ type DBConfig struct {
 	Charset  string
 }
 
+type APIConfig struct {
+	ColorMindURL string
+}
+
 func GetConfig() *Config {
 
 	err := godotenv.Load()
@@ -39,6 +44,9 @@ func GetConfig() *Config {
 	// Get DB config
 	// TODO: set up db for users
 
+	// Get API config
+	api_colormind_url := os.Getenv("API_COLORMIND_URL")
+
 	return &Config{
 		Server: &ServerConfig{
 			Port: server_port,
@@ -51,6 +59,9 @@ func GetConfig() *Config {
 			Password: "Guest0000!",
 			Name:     "todoapp",
 			Charset:  "utf8",
+		},
+		API: &APIConfig{
+			ColorMindURL: api_colormind_url,
 		},
 	}
 }
