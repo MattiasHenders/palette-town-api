@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/MattiasHenders/palette-town-api/config"
 
@@ -19,6 +20,41 @@ func GetRandomColourPalette() (*models.ColourPalette, *errors.HTTPError) {
 
 	// Make internal request to get raw palette
 	colourBytes, httpErr := server_helpers.MakeInternalRequest("POST", colormindURL, `{"model":"default"}`)
+	if httpErr != nil {
+		return nil, httpErr
+	}
+
+	// Parse ColorMindsRequest
+	colourString := string(colourBytes)
+	colorMindsResp := models.ColorMindsResponse{}
+	err := json.Unmarshal([]byte(colourString), &colorMindsResp)
+	if err != nil {
+		return nil, errors.NewHTTPError(err, http.StatusInternalServerError, "Error generating ColorMindsRequest in GetRandomColourPalette")
+	}
+
+	// Generate RGB string array from Colorminds string
+	rawColourArr := GetRGBCodes(&colorMindsResp)
+
+	//Generate ColourPalette
+	hexCodes := ConvertRGBArrayIntoHexCodeArray(rawColourArr)
+	palette := CreateColourPalette(hexCodes)
+
+	// Return the found colours
+	return palette, nil
+}
+
+func GetColourPromptColourPalette(colours string) (*models.ColourPalette, *errors.HTTPError) {
+
+	// Get URL to Colorminds ML
+	colormindURL := config.GetConfig().API.ColorMindURL
+	colorsPromptData, inputErr := GetColourPalettePromptData(colours)
+	if inputErr != nil {
+		return nil, errors.NewHTTPError(inputErr, http.StatusBadRequest, inputErr.Error())
+	}
+
+	// Make internal request to get raw palette
+	colourBytes, httpErr := server_helpers.MakeInternalRequest(
+		"POST", colormindURL, colorsPromptData)
 	if httpErr != nil {
 		return nil, httpErr
 	}
@@ -69,4 +105,15 @@ func ConvertRGBIntoHexCode(rgbColour models.RGBColour) string {
 
 func CreateColourPalette(hexCodeArray []string) *models.ColourPalette {
 	return &models.ColourPalette{Colours: hexCodeArray}
+}
+
+func GetColourPalettePromptData(rawColours string) (string, error) {
+
+	colours := strings.Split(rawColours, ",")
+
+	fmt.Println(colours)
+
+	data := `{"input":[[44,43,44],[90,83,82],"N","N","N"],"model":"default"}`
+
+	return data, nil
 }
