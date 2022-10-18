@@ -56,8 +56,7 @@ func GetColourPromptColourPalette(colours string) (*models.ColourPalette, *error
 	}
 
 	// Make internal request to get raw palette
-	colourBytes, httpErr := server_helpers.MakeInternalRequest(
-		"POST", colormindURL, colorsPromptData)
+	colourBytes, httpErr := server_helpers.MakeInternalRequest("POST", colormindURL, colorsPromptData)
 	if httpErr != nil {
 		return nil, httpErr
 	}
