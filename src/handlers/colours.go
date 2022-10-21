@@ -47,9 +47,10 @@ func GetColourPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.R
 
 		// If call was a success
 		resp := models.ServerResponse{
-			Message: "Successfully got colour palette from given colours",
-			Code:    http.StatusOK,
-			Data:    httpResp,
+			Message:    "Successfully got colour palette from given colours",
+			GivenInput: colours,
+			Code:       http.StatusOK,
+			Data:       httpResp,
 		}
 		json.NewEncoder(w).Encode(resp)
 		return nil

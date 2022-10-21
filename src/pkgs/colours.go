@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/MattiasHenders/palette-town-api/config"
@@ -12,6 +13,10 @@ import (
 	errors "github.com/MattiasHenders/palette-town-api/src/internal/errors"
 	"github.com/MattiasHenders/palette-town-api/src/internal/server_helpers"
 	"github.com/MattiasHenders/palette-town-api/src/models"
+)
+
+const (
+	MAX_AMOUNT_COLOURS = 5
 )
 
 func GetRandomColourPalette() (*models.ColourPalette, *errors.HTTPError) {
@@ -105,34 +110,82 @@ func ConvertRGBIntoHexCode(rgbColour models.RGBColour) string {
 	return fmt.Sprintf("#%02x%02x%02x", rgbColour.Red, rgbColour.Green, rgbColour.Blue)
 }
 
+func ConvertHexIntoRGBCode(hex string) (models.RGBColour, error) {
+	var rgb models.RGBColour
+	fmt.Println(hex)
+	values, err := strconv.ParseUint(hex, 16, 32)
+	if err != nil {
+		return models.RGBColour{}, err
+	}
+
+	rgb = models.RGBColour{
+		Red:   int(uint8(values >> 16)),
+		Green: int(uint8((values >> 8) & 0xFF)),
+		Blue:  int(uint8(values & 0xFF)),
+	}
+	return rgb, nil
+}
+
 func CreateColourPalette(hexCodeArray []string) *models.ColourPalette {
 	return &models.ColourPalette{Colours: hexCodeArray}
 }
 
 func GetColourPalettePromptData(rawColours string) (string, error) {
 
-	colours := strings.Split(rawColours, ",")
+	colours := strings.Split(strings.ReplaceAll(rawColours, " ", ""), ",")
 
-	//Check we have 5 or less colours
-	if len(colours) > 5 {
-		return "", fmt.Errorf("Max amount of colours allowed is 5, you provided %d", len(colours))
+	//Check we have MAX_AMOUNT_COLOURS or less colours
+	if len(colours) > MAX_AMOUNT_COLOURS {
+		return "", fmt.Errorf("max amount of colours allowed is 5, you provided %d", len(colours))
 	}
 
 	// Validate each colour
 	for _, colour := range colours {
-		err := ValidateHexCode(colour)
-		if err {
-			return "", fmt.Errorf("%s is not a valid hex code.", colour)
+		isValid := ValidateHexCode(colour)
+		if !isValid {
+			return "", fmt.Errorf("%s is not a valid hex code", colour)
 		}
 	}
 
-	// TODO: Convert each hex into RGB
-	data := `{"input":[[44,43,44],[90,83,82],"N","N","N"],"model":"default"}`
+	// Convert each hex into RGB
+	var parsedColours []models.RGBColour
+	for _, colour := range colours {
+		parsedColour, parseErr := ConvertHexIntoRGBCode(strings.ReplaceAll(colour, "#", ""))
+		if parseErr != nil {
+			return "", fmt.Errorf("error parsing %s into rgb: %x", colour, parseErr)
+		}
+		parsedColours = append(parsedColours, parsedColour)
+	}
+
+	// Create the data to go into colorminds input
+	var colorMindsInput string
+	inputCount := 0
+	for _, rgb := range parsedColours {
+		colorMindsInput += fmt.Sprintf("[%d,%d,%d]", rgb.Red, rgb.Green, rgb.Blue)
+		inputCount++
+
+		// Check if its not our last input
+		if inputCount != MAX_AMOUNT_COLOURS {
+			colorMindsInput += ","
+		}
+	}
+
+	// Dont go over max amount of colours
+	for i := inputCount; i < 5; i++ {
+		colorMindsInput += `"N"`
+		if i != MAX_AMOUNT_COLOURS-1 {
+			colorMindsInput += ","
+		}
+	}
+
+	//Put the data in proper form
+	data := fmt.Sprintf(`{"input":[%s],"model":"default"}`, colorMindsInput)
 
 	return data, nil
 }
 
 func ValidateHexCode(hexCode string) bool {
-	match, _ := regexp.MatchString("^#(?:[0-9a-fA-F]{3}){1,2}$", hexCode)
+	r := regexp.MustCompile(`^#(([0-9a-fA-F]{2}){3}|([0-9a-fA-F]){3})$`)
+	match := r.MatchString(hexCode)
 	return match
 }
