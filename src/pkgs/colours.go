@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -110,13 +111,17 @@ func GetWordPromptColourPalette(word string) (*models.ColourPalette, *errors.HTT
 	index := r1.Intn(images.Count)
 
 	// Create file name
-	fileName := fmt.Sprintf("./bin/images/%s", makeTimestamp())
+	raw := makeTimestamp()
+	path := filepath.Join("bin", "images", raw)
 
 	// Get Image from Google based on word
-	downloadFile(images.Data[index], fileName)
+	downloadErr := downloadFile(images.Data[index], path)
+	if downloadErr != nil {
+		return nil, errors.NewHTTPError(downloadErr, http.StatusInternalServerError, downloadErr.Error())
+	}
 
 	// Get colours from image downloaded
-	rawAlphaColours, parseErr := colorthief.GetPaletteFromFile(fileName, 5)
+	rawAlphaColours, parseErr := colorthief.GetPaletteFromFile(path, 5)
 	if parseErr != nil {
 		return nil, errors.NewHTTPError(parseErr, http.StatusInternalServerError, parseErr.Error())
 	}
@@ -179,7 +184,6 @@ func ConvertRGBIntoHexCode(rgbColour models.RGBColour) string {
 
 func ConvertHexIntoRGBCode(hex string) (models.RGBColour, error) {
 	var rgb models.RGBColour
-	fmt.Println(hex)
 	values, err := strconv.ParseUint(hex, 16, 32)
 	if err != nil {
 		return models.RGBColour{}, err
@@ -254,21 +258,17 @@ func GetColourPalettePromptData(rawColours string) (string, error) {
 func GetColourPaletteWordPromptData(colours []color.Color) (string, error) {
 
 	// Convert each alpha color into RGB
-	var parsedColours []models.RGBColour
-	for _, colour := range colours {
-		red, green, blue, _ := colour.RGBA()
-		parsedColours = append(parsedColours, models.RGBColour{
-			Red:   int(red),
-			Green: int(green),
-			Blue:  int(blue),
-		})
-	}
+	str := fmt.Sprint(colours)
+	str = strings.ReplaceAll(str, "[{", "")
+	str = strings.ReplaceAll(str, "}]", "")
+	strArr := strings.Split(str, "} {")
 
 	// Create the data to go into colorminds input
 	var colorMindsInput string
 	inputCount := 0
-	for _, rgb := range parsedColours {
-		colorMindsInput += fmt.Sprintf("[%d,%d,%d]", rgb.Red, rgb.Green, rgb.Blue)
+	for _, rgba := range strArr {
+		rgb := strings.Split(rgba, " ")
+		colorMindsInput += fmt.Sprintf("[%s,%s,%s]", rgb[0], rgb[1], rgb[2])
 		inputCount++
 
 		// Check if its not our last input
@@ -348,10 +348,10 @@ func getSearch(searchQuery string) Images {
 	})
 
 	// Search query
-	pexelsQuery := strings.Replace(searchString, "-", "%20", -1)
+	// pexelsQuery := strings.Replace(searchString, "-", "%20", -1)
 	stocSnapQuery := strings.Replace(searchString, "-", "+", -1)
 
-	c.Visit("https://www.flickr.com/search/?text=" + pexelsQuery)
+	// c.Visit("https://www.flickr.com/search/?text=" + pexelsQuery)
 	c.Visit("http://www.google.com/images?q=" + stocSnapQuery)
 	return Images{
 		Count: len(array),
@@ -361,4 +361,25 @@ func getSearch(searchQuery string) Images {
 type Images struct {
 	Count int      `json:"counts"`
 	Data  []string `json:"data"`
+}
+
+func StringFromUInt32(n int32) string {
+	buf := [11]byte{}
+	pos := len(buf)
+	i := int64(n)
+	signed := i < 0
+	if signed {
+		i = -i
+	}
+	for {
+		pos--
+		buf[pos], i = '0'+byte(i%10), i/10
+		if i == 0 {
+			if signed {
+				pos--
+				buf[pos] = '-'
+			}
+			return string(buf[pos:])
+		}
+	}
 }
