@@ -3,10 +3,17 @@ package pkgs
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"math/rand"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/cascax/colorthief-go"
+	"github.com/gocolly/colly"
 
 	"github.com/MattiasHenders/palette-town-api/config"
 
@@ -56,6 +63,66 @@ func GetColourPromptColourPalette(colours string) (*models.ColourPalette, *error
 
 	// Parse prompt data
 	colorsPromptData, inputErr := GetColourPalettePromptData(colours)
+	if inputErr != nil {
+		return nil, errors.NewHTTPError(inputErr, http.StatusBadRequest, inputErr.Error())
+	}
+
+	// Make internal request to get raw palette
+	colourBytes, httpErr := server_helpers.MakeInternalRequest("POST", colormindURL, colorsPromptData)
+	if httpErr != nil {
+		return nil, httpErr
+	}
+
+	// Parse ColorMindsRequest
+	colourString := string(colourBytes)
+	colorMindsResp := models.ColorMindsResponse{}
+	err := json.Unmarshal([]byte(colourString), &colorMindsResp)
+	if err != nil {
+		return nil, errors.NewHTTPError(err, http.StatusInternalServerError, "Error generating ColorMindsRequest in GetRandomColourPalette")
+	}
+
+	// Generate RGB string array from Colorminds string
+	rawColourArr := GetRGBCodes(&colorMindsResp)
+
+	//Generate ColourPalette
+	hexCodes := ConvertRGBArrayIntoHexCodeArray(rawColourArr)
+	palette := CreateColourPalette(hexCodes)
+
+	// Return the found colours
+	return palette, nil
+}
+
+func GetWordPromptColourPalette(word string) (*models.ColourPalette, *errors.HTTPError) {
+
+	// Get URL to Colorminds ML
+	colormindURL := config.GetConfig().API.ColorMindURL
+
+	//Search for images
+	images := getSearch(word)
+	if images.Count == 0 {
+		return nil, errors.NewHTTPError(nil, http.StatusInternalServerError, "found no images from search term")
+	}
+
+	// Randomly get an image found
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	index := r1.Intn(images.Count)
+
+	// Create file name
+	fileName := makeTimestamp()
+
+	// Get Image from Google based on word
+	downloadFile(images.Data[index], fileName)
+
+	colours, parseErr := colorthief.GetPaletteFromFile(fileName, 5)
+	if parseErr != nil {
+		return nil, errors.NewHTTPError(parseErr, http.StatusInternalServerError, parseErr.Error())
+	}
+
+	fmt.Println(colours)
+
+	// Parse prompt data
+	colorsPromptData, inputErr := GetColourPalettePromptData("string(colours)")
 	if inputErr != nil {
 		return nil, errors.NewHTTPError(inputErr, http.StatusBadRequest, inputErr.Error())
 	}
@@ -188,4 +255,70 @@ func ValidateHexCode(hexCode string) bool {
 	r := regexp.MustCompile(`^#(([0-9a-fA-F]{2}){3}|([0-9a-fA-F]){3})$`)
 	match := r.MatchString(hexCode)
 	return match
+}
+
+func downloadFile(URL, fileName string) error {
+	//Get the response bytes from the url
+	response, err := http.Get(URL)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return fmt.Errorf("failed to download file properly")
+	}
+	//Create a empty file
+	file, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	//Write the bytes to the file
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func makeTimestamp() string {
+	str := fmt.Sprintf("%x", time.Now().UnixNano()/int64(time.Millisecond))
+	return str
+}
+
+func getSearch(searchQuery string) Images {
+
+	searchString := strings.Replace(searchQuery, " ", "-", -1)
+
+	c := colly.NewCollector()
+	c.UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0"
+	c.AllowURLRevisit = true
+	c.DisableCookies()
+	array := []string{}
+
+	// Find and visit all links
+	c.OnHTML("img[src]", func(e *colly.HTMLElement) {
+		src := e.Attr("src")
+		if src != "" {
+			array = append(array, e.Attr("src"))
+		}
+	})
+
+	// Search query
+	pexelsQuery := strings.Replace(searchString, "-", "%20", -1)
+	stocSnapQuery := strings.Replace(searchString, "-", "+", -1)
+
+	c.Visit("https://www.flickr.com/search/?text=" + pexelsQuery)
+	c.Visit("http://www.google.com/images?q=" + stocSnapQuery)
+	return Images{
+		Count: len(array),
+		Data:  array}
+}
+
+type Images struct {
+	Count int      `json:"counts"`
+	Data  []string `json:"data"`
 }

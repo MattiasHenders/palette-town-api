@@ -47,8 +47,8 @@ func Start(config *config.Config) {
 	r.Group(func(r chi.Router) {
 
 		r.Get("/api/colour/random", s.Handler(h.GetRandomColourPaletteHandler()))
-		r.Get("/api/colour/prompt", s.Handler(h.GetColourPromptColourPaletteHandler()))
-		// r.Get("/api/colour/prompt/{words}", s.Handler(h.GetRandomColourPaletteHandler()))
+		r.Get("/api/colour/colours", s.Handler(h.GetColourPromptColourPaletteHandler()))
+		r.Get("/api/colour/word", s.Handler(h.GetWordPromptColourPaletteHandler()))
 	})
 
 	// Routes that require user authentication here...

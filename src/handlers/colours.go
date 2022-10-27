@@ -56,3 +56,30 @@ func GetColourPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.R
 		return nil
 	}
 }
+
+func GetWordPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
+	return func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
+
+		// Get the colours from query
+		word := server_helpers.GetQueryParam(r, "word")
+		if word == nil {
+			return errors.NewHTTPError(nil, http.StatusBadRequest, "Missing word")
+		}
+
+		// Call the function
+		httpResp, httpErr := p.GetWordPromptColourPalette(*word)
+		if httpErr != nil {
+			return httpErr
+		}
+
+		// If call was a success
+		resp := models.ServerResponse{
+			Message:    "Successfully got colour palette from given word",
+			GivenInput: word,
+			Code:       http.StatusOK,
+			Data:       httpResp,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return nil
+	}
+}
