@@ -1,7 +1,8 @@
-# Go Todo REST API Example
-A RESTful API example for simple todo application with Go
+![alt text][banner-short]
 
-It is a just simple tutorial or example for making simple RESTful API with Go using **gorilla/mux** (A nice mux library) and **gorm** (An ORM for Go)
+
+# Palette Town API
+A RESTful API for generating appealing 5 colour, colour palettes.
 
 ## Installation & Run
 ```bash
@@ -9,79 +10,80 @@ It is a just simple tutorial or example for making simple RESTful API with Go us
 go get github.com/MattiasHenders/palette-town-api
 ```
 
-Before running API server, you should set the database config with yours or set the your database config with my values on [config.go](https://github.com/MattiasHenders/palette-town-api/blob/master/config/config.go)
-```go
-func GetConfig() *Config {
-	return &Config{
-		DB: &DBConfig{
-			Dialect:  "mysql",
-			Username: "guest",
-			Password: "Guest0000!",
-			Name:     "todoapp",
-			Charset:  "utf8",
-		},
-	}
-}
-```
-
 ```bash
-# Build and Run
-cd go-todo-rest-api-example
-go build
-./go-todo-rest-api-example
+# Build and Run on MacOS/Linux
+make run-server
 
-# API Endpoint : http://127.0.0.1:3000
-```
+# Build and Run on Windows
+make run-server-windows
 
-## Structure
-```
-├── app
-│   ├── app.go
-│   ├── handler          // Our API core handlers
-│   │   ├── common.go    // Common response functions
-│   │   ├── projects.go  // APIs for Project model
-│   │   └── tasks.go     // APIs for Task model
-│   └── model
-│       └── model.go     // Models for our application
-├── config
-│   └── config.go        // Configuration
-└── main.go
+# API Endpoint : http://localhost:8080
 ```
 
 ## API
 
-#### /projects
-* `GET` : Get all projects
-* `POST` : Create a new project
+### Example Response JSON Structure
+```bash
+{
+    "message": "Successfully got colour palette from given word",
+    "givenInput": "forest",
+    "code": 200,
+    "data": {
+        "colours": [
+            "#747f41",
+            "#538443",
+            "#4f632d",
+            "#8f995d",
+            "#d4cc7d"
+        ]
+    },
+    "coolorsLink": "https://coolors.co/747f41-538443-4f632d-8f995d-d4cc7d"
+}
+```
 
-#### /projects/:title
-* `GET` : Get a project
-* `PUT` : Update a project
-* `DELETE` : Delete a project
+#### /api/colour/random
+* `GET` : Get a random colour palette
 
-#### /projects/:title/archive
-* `PUT` : Archive a project
-* `DELETE` : Restore a project 
+#### /api/colour/colours
+* `GET` : Get a colour palette based on an input of colours
 
-#### /projects/:title/tasks
-* `GET` : Get all tasks of a project
-* `POST` : Create a new task in a project
-
-#### /projects/:title/tasks/:id
-* `GET` : Get a task of a project
-* `PUT` : Update a task of a project
-* `DELETE` : Delete a task of a project
-
-#### /projects/:title/tasks/:id/complete
-* `PUT` : Complete a task of a project
-* `DELETE` : Undo a task of a project
+#### /api/colour/words
+* `GET` : Get a colour palette based on an input of words
 
 ## Todo
 
 - [x] Support basic REST APIs.
 - [ ] Support Authentication with user for securing the APIs.
-- [ ] Make convenient wrappers for creating API handlers.
 - [ ] Write the tests for all APIs.
 - [x] Organize the code with packages
 - [ ] Make docs with GoDoc
 - [ ] Building a deployment process 
+- [ ] Connect to a database for users
+- [ ] Host the Colourminds API on own server
+
+## Structure
+```
+├── src
+│   ├── main.go
+│   ├── handlers                    
+│   │   ├── colours.go               // Common response functions for colour endpoints
+│   │   └── users.go                 // Common response functions for user endpoints
+│   ├── internal                    
+│   │   ├── errors                  
+|   │   │   └── errors.go            // Internal error models and functions
+│   │   └── server_helpers          
+|   │       └── server_helpers.go    // Internal error models and functions
+│   ├── model
+│   |   ├── colours.go               // Models for colours
+│   |   ├── users.go                 // Models for users
+│   |   └── server.go                // Models for the server
+│   └── pkgs
+│       └── colours.go               // Functions for generating colour palettes
+├── config
+│   └── config.go                    // Configuration
+└── main.go
+```
+
+
+[banner-short]: https://github.com/MattiasHenders/palette-town-api/blob/main/assets/banner-short.png?raw=true "Palette Town API Banner"
+[banner]: https://github.com/MattiasHenders/palette-town-api/blob/main/assets/banner.png?raw=true "Palette Town API Full Banner"
