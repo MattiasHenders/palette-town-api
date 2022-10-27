@@ -48,7 +48,7 @@ func Start(config *config.Config) {
 
 		r.Get("/api/colour/random", s.Handler(h.GetRandomColourPaletteHandler()))
 		r.Get("/api/colour/colours", s.Handler(h.GetColourPromptColourPaletteHandler()))
-		r.Get("/api/colour/word", s.Handler(h.GetWordPromptColourPaletteHandler()))
+		r.Get("/api/colour/words", s.Handler(h.GetWordPromptColourPaletteHandler()))
 	})
 
 	// Routes that require user authentication here...
