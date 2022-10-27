@@ -4,12 +4,13 @@
 # Palette Town API
 A RESTful API for generating appealing 5 colour, colour palettes.
 
-## Installation & Run
+## Setup
+### Installation
 ```bash
 # Download this project
-go get github.com/MattiasHenders/palette-town-api
+git clone https://github.com/MattiasHenders/palette-town-api.git
 ```
-
+### Run
 ```bash
 # Build and Run on MacOS/Linux
 make run-server
@@ -18,6 +19,10 @@ make run-server
 make run-server-windows
 
 # API Endpoint : http://localhost:8080
+```
+### Environment Variables
+```bash
+# Create .env in root, see .env.example for needed variables
 ```
 
 ## API
@@ -81,6 +86,9 @@ make run-server-windows
 │       └── colours.go               // Functions for generating colour palettes
 ├── config
 │   └── config.go                    // Configuration
+├── tests
+│   └── colours                    
+│       └── colours_test.go          // Tests for colour functions
 └── main.go
 ```
 
