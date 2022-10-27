@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/MattiasHenders/palette-town-api/src/models"
 	"github.com/go-chi/chi"
 
 	errors "github.com/MattiasHenders/palette-town-api/src/internal/errors"
@@ -116,4 +117,20 @@ func MakeInternalRequest(method string, url string, rawData string) ([]byte, *er
 
 	// Return body text as byte array
 	return bodyText, nil
+}
+
+func GenerateCoolorsLink(palette *models.ColourPalette) string {
+
+	baseURL := `https://coolors.co/`
+
+	for i, colour := range palette.Colours {
+		colourStr := strings.ReplaceAll(colour, "#", "")
+		baseURL += colourStr
+
+		if i != len(palette.Colours)-1 {
+			baseURL += "-"
+		}
+	}
+
+	return baseURL
 }

@@ -19,11 +19,15 @@ func GetRandomColourPaletteHandler() func(w http.ResponseWriter, r *http.Request
 			return httpErr
 		}
 
+		// Generate a coolors link for easy viewing
+		coolorsLink := server_helpers.GenerateCoolorsLink(httpResp)
+
 		// If call was a success
 		resp := models.ServerResponse{
-			Message: "Successfully got random colour palette",
-			Code:    http.StatusOK,
-			Data:    httpResp,
+			Message:     "Successfully got random colour palette",
+			Code:        http.StatusOK,
+			Data:        httpResp,
+			CoolorsLink: coolorsLink,
 		}
 		json.NewEncoder(w).Encode(resp)
 		return nil
@@ -45,12 +49,16 @@ func GetColourPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.R
 			return httpErr
 		}
 
+		// Generate a coolors link for easy viewing
+		coolorsLink := server_helpers.GenerateCoolorsLink(httpResp)
+
 		// If call was a success
 		resp := models.ServerResponse{
-			Message:    "Successfully got colour palette from given colours",
-			GivenInput: colours,
-			Code:       http.StatusOK,
-			Data:       httpResp,
+			Message:     "Successfully got colour palette from given colours",
+			GivenInput:  colours,
+			Code:        http.StatusOK,
+			Data:        httpResp,
+			CoolorsLink: coolorsLink,
 		}
 		json.NewEncoder(w).Encode(resp)
 		return nil
@@ -72,12 +80,16 @@ func GetWordPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.Req
 			return httpErr
 		}
 
+		// Generate a coolors link for easy viewing
+		coolorsLink := server_helpers.GenerateCoolorsLink(httpResp)
+
 		// If call was a success
 		resp := models.ServerResponse{
-			Message:    "Successfully got colour palette from given word",
-			GivenInput: word,
-			Code:       http.StatusOK,
-			Data:       httpResp,
+			Message:     "Successfully got colour palette from given word",
+			GivenInput:  word,
+			Code:        http.StatusOK,
+			Data:        httpResp,
+			CoolorsLink: coolorsLink,
 		}
 		json.NewEncoder(w).Encode(resp)
 		return nil
