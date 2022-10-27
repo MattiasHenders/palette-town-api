@@ -3,6 +3,7 @@ package pkgs
 import (
 	"encoding/json"
 	"fmt"
+	"image/color"
 	"io"
 	"math/rand"
 	"net/http"
@@ -109,20 +110,19 @@ func GetWordPromptColourPalette(word string) (*models.ColourPalette, *errors.HTT
 	index := r1.Intn(images.Count)
 
 	// Create file name
-	fileName := makeTimestamp()
+	fileName := fmt.Sprintf("./bin/images/%s", makeTimestamp())
 
 	// Get Image from Google based on word
 	downloadFile(images.Data[index], fileName)
 
-	colours, parseErr := colorthief.GetPaletteFromFile(fileName, 5)
+	// Get colours from image downloaded
+	rawAlphaColours, parseErr := colorthief.GetPaletteFromFile(fileName, 5)
 	if parseErr != nil {
 		return nil, errors.NewHTTPError(parseErr, http.StatusInternalServerError, parseErr.Error())
 	}
 
-	fmt.Println(colours)
-
 	// Parse prompt data
-	colorsPromptData, inputErr := GetColourPalettePromptData("string(colours)")
+	colorsPromptData, inputErr := GetColourPaletteWordPromptData(rawAlphaColours)
 	if inputErr != nil {
 		return nil, errors.NewHTTPError(inputErr, http.StatusBadRequest, inputErr.Error())
 	}
@@ -222,6 +222,46 @@ func GetColourPalettePromptData(rawColours string) (string, error) {
 			return "", fmt.Errorf("error parsing %s into rgb: %x", colour, parseErr)
 		}
 		parsedColours = append(parsedColours, parsedColour)
+	}
+
+	// Create the data to go into colorminds input
+	var colorMindsInput string
+	inputCount := 0
+	for _, rgb := range parsedColours {
+		colorMindsInput += fmt.Sprintf("[%d,%d,%d]", rgb.Red, rgb.Green, rgb.Blue)
+		inputCount++
+
+		// Check if its not our last input
+		if inputCount != MAX_AMOUNT_COLOURS {
+			colorMindsInput += ","
+		}
+	}
+
+	// Dont go over max amount of colours
+	for i := inputCount; i < 5; i++ {
+		colorMindsInput += `"N"`
+		if i != MAX_AMOUNT_COLOURS-1 {
+			colorMindsInput += ","
+		}
+	}
+
+	//Put the data in proper form
+	data := fmt.Sprintf(`{"input":[%s],"model":"default"}`, colorMindsInput)
+
+	return data, nil
+}
+
+func GetColourPaletteWordPromptData(colours []color.Color) (string, error) {
+
+	// Convert each alpha color into RGB
+	var parsedColours []models.RGBColour
+	for _, colour := range colours {
+		red, green, blue, _ := colour.RGBA()
+		parsedColours = append(parsedColours, models.RGBColour{
+			Red:   int(red),
+			Green: int(green),
+			Blue:  int(blue),
+		})
 	}
 
 	// Create the data to go into colorminds input
