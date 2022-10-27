@@ -81,6 +81,9 @@ make run-server-windows
 │       └── colours.go               // Functions for generating colour palettes
 ├── config
 │   └── config.go                    // Configuration
+├── tests
+│   └── colours                    
+│       └── colours_test.go          // Tests for colour functions
 └── main.go
 ```
 
