@@ -55,20 +55,30 @@ make run-server-windows
 * `GET` : Get a colour palette based on an input of words
 
 ## Example Palettes
-* `Endpoint: /api/colour/random`
-* ![image](https://user-images.githubusercontent.com/59512495/198418359-ebaf2288-92ae-44c7-ae1f-30a49ad548f8.png)
+```
+Endpoint: /api/colour/random
+```
+![image](https://user-images.githubusercontent.com/59512495/198418359-ebaf2288-92ae-44c7-ae1f-30a49ad548f8.png)
 
-* `Endpoint: /api/colour/colours`
-* `Input: colours=#fe34a1`
-* ![image](https://user-images.githubusercontent.com/59512495/198418623-d09d1436-f358-410f-aa45-4878e531e0cf.png)
 
-* `Endpoint: /api/colour/words`
-* `Input: words=flame`
-* ![image](https://user-images.githubusercontent.com/59512495/198418750-0877dc63-e994-4fde-8a8e-1901e095c62d.png)
+```
+Endpoint: /api/colour/colours
+Input: colours=#fe34a1
+```
+![image](https://user-images.githubusercontent.com/59512495/198418623-d09d1436-f358-410f-aa45-4878e531e0cf.png)
 
-* `Endpoint: /api/colour/words`
-* `Input: words=mango icecream`
-* ![image](https://user-images.githubusercontent.com/59512495/198418894-fd3f6784-87f4-4693-9b35-8e264b5e0f32.png)
+
+```
+Endpoint: /api/colour/words
+Input: words=flame
+```
+![image](https://user-images.githubusercontent.com/59512495/198418750-0877dc63-e994-4fde-8a8e-1901e095c62d.png)
+
+```
+Endpoint: /api/colour/words
+Input: words=mango icecream
+```
+![image](https://user-images.githubusercontent.com/59512495/198418894-fd3f6784-87f4-4693-9b35-8e264b5e0f32.png)
 
 
 ## Todo
