@@ -11,6 +11,7 @@ type Config struct {
 	DB     *DBConfig
 	Server *ServerConfig
 	API    *APIConfig
+	JWT    *JWTConfig
 }
 
 type ServerConfig struct {
@@ -27,6 +28,11 @@ type DBConfig struct {
 
 type APIConfig struct {
 	ColorMindURL string
+}
+
+type JWTConfig struct {
+	Access  string
+	Refresh string
 }
 
 func GetConfig() *Config {
@@ -49,6 +55,10 @@ func GetConfig() *Config {
 	// Get API config
 	api_colormind_url := os.Getenv("API_COLORMIND_URL")
 
+	// Get JWT config
+	jwt_access := os.Getenv("JWT_ACCESS")
+	jwt_refresh := os.Getenv("JWT_REFRESH")
+
 	return &Config{
 		Server: &ServerConfig{
 			Port: server_port,
@@ -62,6 +72,10 @@ func GetConfig() *Config {
 		},
 		API: &APIConfig{
 			ColorMindURL: api_colormind_url,
+		},
+		JWT: &JWTConfig{
+			Access:  jwt_access,
+			Refresh: jwt_refresh,
 		},
 	}
 }

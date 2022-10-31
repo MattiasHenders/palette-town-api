@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MattiasHenders/palette-town-api/src/db"
+	"github.com/MattiasHenders/palette-town-api/src/internal/auth"
 	errors "github.com/MattiasHenders/palette-town-api/src/internal/errors"
 	"github.com/MattiasHenders/palette-town-api/src/internal/utils"
 	"github.com/MattiasHenders/palette-town-api/src/models"
@@ -48,6 +49,12 @@ func UserLogin(email string, password string) (*models.User, *errors.HTTPError) 
 		return nil, errors.NewHTTPError(nil, http.StatusUnauthorized, "Incorrect password")
 	}
 
+	token, tokenErr := auth.CreateToken(user.Email)
+	if tokenErr != nil {
+		return nil, errors.NewHTTPError(tokenErr, http.StatusUnprocessableEntity, tokenErr.Error())
+	}
+	user.Tokens = token
+
 	return user, nil
 }
 
@@ -68,6 +75,12 @@ func UserSignup(first *string, last *string, email string, password string) (*mo
 	if insertErr != nil {
 		return nil, insertErr
 	}
+
+	token, tokenErr := auth.CreateToken(insertUser.Email)
+	if tokenErr != nil {
+		return nil, errors.NewHTTPError(tokenErr, http.StatusUnprocessableEntity, tokenErr.Error())
+	}
+	user.Tokens = token
 
 	return user, nil
 }

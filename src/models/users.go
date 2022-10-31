@@ -10,4 +10,5 @@ type User struct {
 	Password  *string            `json:"-" bson:"password"`
 	UserType  string             `json:"userType" bson:"userType"`
 	Credits   int                `json:"credits" bson:"credits"`
+	Tokens    *TokenDetails      `json:"tokens"`
 }

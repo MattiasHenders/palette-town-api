@@ -54,10 +54,7 @@ func Start(config *config.Config) {
 
 	// Routes that require user authentication here...
 	r.Group(func(r chi.Router) {
-
-		// r.Use(middleware.Verifier(publicKeySet)) //TODO
-		r.Use(middleware.Authenticator)
-		r.Use(middleware.HydrateAuthUser())
+		r.Use(middleware.AuthenticateUser)
 
 		// User authentication routes here...
 		r.Post("/api/logout", s.Handler(h.PostUserLogoutHandler()))
@@ -70,9 +67,9 @@ func Start(config *config.Config) {
 
 	// Routes that require Admin access here...
 	r.Group(func(r chi.Router) {
-		// TODO: Authenticate the admin
-		// r.Use(middleware.VerifyAdmin)
+		r.Use(middleware.AuthenticateAdmin)
 
+		// User management routes here...
 	})
 
 	// Health checks here...
