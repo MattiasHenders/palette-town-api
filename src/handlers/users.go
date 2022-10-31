@@ -17,6 +17,12 @@ func GetUserByIDHandler() func(w http.ResponseWriter, r *http.Request) *errors.H
 			return errors.NewHTTPError(nil, http.StatusBadRequest, "Missing id")
 		}
 
+		user, userErr := pkgs.GetUserByID(*id)
+		if userErr != nil {
+			return userErr
+		}
+
+		json.NewEncoder(w).Encode(user)
 		return nil
 	}
 }
