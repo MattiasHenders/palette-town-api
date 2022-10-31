@@ -9,8 +9,19 @@ import (
 	"github.com/MattiasHenders/palette-town-api/src/pkgs"
 )
 
+const (
+	rapidAPIHost = "rapidapi.com"
+)
+
 func AuthenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(server_helpers.Handler(func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
+
+		// Rapid API Auth is already handled
+		if r.Host == rapidAPIHost {
+			// Token is authenticated, pass it through
+			next.ServeHTTP(w, r)
+			return nil
+		}
 
 		tokenAuth, err := auth.ExtractTokenMetadata(r)
 		if err != nil {
