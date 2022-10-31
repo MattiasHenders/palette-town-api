@@ -13,7 +13,6 @@ import (
 func GetRandomColourPaletteHandler() func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
 	return func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
 
-		// Call the function
 		httpResp, httpErr := p.GetRandomColourPalette()
 		if httpErr != nil {
 			return httpErr
@@ -37,13 +36,11 @@ func GetRandomColourPaletteHandler() func(w http.ResponseWriter, r *http.Request
 func GetColourPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
 	return func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
 
-		// Get the colours from query
 		colours := server_helpers.GetQueryParam(r, "colours")
 		if colours == nil {
 			return errors.NewHTTPError(nil, http.StatusBadRequest, "Missing colours")
 		}
 
-		// Call the function
 		httpResp, httpErr := p.GetColourPromptColourPalette(*colours)
 		if httpErr != nil {
 			return httpErr
@@ -68,13 +65,11 @@ func GetColourPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.R
 func GetWordPromptColourPaletteHandler() func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
 	return func(w http.ResponseWriter, r *http.Request) *errors.HTTPError {
 
-		// Get the colours from query
 		words := server_helpers.GetQueryParam(r, "words")
 		if words == nil {
 			return errors.NewHTTPError(nil, http.StatusBadRequest, "Missing words")
 		}
 
-		// Call the function
 		httpResp, httpErr := p.GetWordPromptColourPalette(*words)
 		if httpErr != nil {
 			return httpErr
