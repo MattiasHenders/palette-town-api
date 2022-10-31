@@ -21,6 +21,5 @@ type ColorMindsResponse struct {
 type MongoDB struct {
 	Client  *mongo.Client
 	Context context.Context
-	Cancel  context.CancelFunc
 	DBName  string
 }

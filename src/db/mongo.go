@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/MattiasHenders/palette-town-api/config"
 	"github.com/MattiasHenders/palette-town-api/src/models"
@@ -15,9 +14,6 @@ import (
 var Mongo *models.MongoDB
 
 func Close() {
-
-	// CancelFunc to cancel to context
-	defer Mongo.Cancel()
 
 	// client provides a method to close
 	// a mongoDB connection.
@@ -40,8 +36,7 @@ func Connect() {
 
 	// ctx will be used to set deadline for process, here
 	// deadline will of 30 seconds.
-	ctx, cancel := context.WithTimeout(context.Background(),
-		30*time.Second)
+	ctx := context.Background()
 
 	// mongo.Connect return mongo.Client method
 	client, _ := mongo.Connect(ctx, options.Client().ApplyURI(completeURI))
@@ -49,7 +44,6 @@ func Connect() {
 	mongoTemp := models.MongoDB{
 		Client:  client,
 		Context: ctx,
-		Cancel:  cancel,
 		DBName:  dbConfig.DBName,
 	}
 
