@@ -11,6 +11,7 @@ import (
 
 	"github.com/MattiasHenders/palette-town-api/config"
 	h "github.com/MattiasHenders/palette-town-api/src/handlers"
+	"github.com/MattiasHenders/palette-town-api/src/internal/middleware"
 	s "github.com/MattiasHenders/palette-town-api/src/internal/server_helpers"
 )
 
@@ -26,7 +27,7 @@ func Start(config *config.Config) {
 		AllowedOrigins: []string{"*"},
 
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
@@ -46,32 +47,31 @@ func Start(config *config.Config) {
 	// Routes that require no authentication here...
 	r.Group(func(r chi.Router) {
 
-		r.Get("/api/colour/random", s.Handler(h.GetRandomColourPaletteHandler()))
-		r.Get("/api/colour/colours", s.Handler(h.GetColourPromptColourPaletteHandler()))
-		r.Get("/api/colour/words", s.Handler(h.GetWordPromptColourPaletteHandler()))
+		// User authentication routes here...
+		r.Post("/api/login", s.Handler(h.PostUserLoginHandler()))
+		r.Post("/api/signup", s.Handler(h.PostUserSignupHandler()))
 	})
 
 	// Routes that require user authentication here...
 	r.Group(func(r chi.Router) {
-		// TODO: Authenticate the user
-		// r.Use(middleware.VerifyAdmin)
-		// r.Use(middleware.HydrateAuthUser(user))
 
-		// Auth routes here...
+		// r.Use(middleware.Verifier(publicKeySet)) //TODO
+		r.Use(middleware.Authenticator)
+		r.Use(middleware.HydrateAuthUser())
 
+		// User authentication routes here...
+		r.Post("/api/logout", s.Handler(h.PostUserLogoutHandler()))
+
+		// Colour routes here...
+		r.Get("/api/colour/random", s.Handler(h.GetRandomColourPaletteHandler()))
+		r.Get("/api/colour/colours", s.Handler(h.GetColourPromptColourPaletteHandler()))
+		r.Get("/api/colour/words", s.Handler(h.GetWordPromptColourPaletteHandler()))
 	})
 
 	// Routes that require Admin access here...
 	r.Group(func(r chi.Router) {
 		// TODO: Authenticate the admin
 		// r.Use(middleware.VerifyAdmin)
-
-		// r.Get("/products", handlers.GetProductsHandler())
-
-	})
-
-	// Routes authenticated by API key
-	r.Group(func(r chi.Router) {
 
 	})
 

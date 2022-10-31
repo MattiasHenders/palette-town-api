@@ -15,16 +15,14 @@ type Config struct {
 
 type ServerConfig struct {
 	Port string
+	Salt string
 }
 
 type DBConfig struct {
-	Dialect  string
-	Host     string
-	Port     int
+	URI      string
 	Username string
 	Password string
-	Name     string
-	Charset  string
+	DBName   string
 }
 
 type APIConfig struct {
@@ -40,9 +38,13 @@ func GetConfig() *Config {
 
 	// Get Server config
 	server_port := os.Getenv("SERVER_PORT")
+	server_salt := os.Getenv("SERVER_SALT")
 
 	// Get DB config
-	// TODO: set up db for users
+	db_uri := os.Getenv("DB_URI")
+	db_username := os.Getenv("DB_USERNAME")
+	db_password := os.Getenv("DB_PASSWORD")
+	db_name := os.Getenv("DB_NAME")
 
 	// Get API config
 	api_colormind_url := os.Getenv("API_COLORMIND_URL")
@@ -50,15 +52,13 @@ func GetConfig() *Config {
 	return &Config{
 		Server: &ServerConfig{
 			Port: server_port,
+			Salt: server_salt,
 		},
 		DB: &DBConfig{
-			Dialect:  "mysql",
-			Host:     "127.0.0.1",
-			Port:     3306,
-			Username: "guest",
-			Password: "Guest0000!",
-			Name:     "todoapp",
-			Charset:  "utf8",
+			URI:      db_uri,
+			Username: db_username,
+			Password: db_password,
+			DBName:   db_name,
 		},
 		API: &APIConfig{
 			ColorMindURL: api_colormind_url,

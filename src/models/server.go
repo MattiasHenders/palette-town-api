@@ -1,5 +1,11 @@
 package models
 
+import (
+	"context"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
 type ServerResponse struct {
 	Message     string `json:"message"`
 	GivenInput  any    `json:"givenInput,omitempty"`
@@ -10,4 +16,11 @@ type ServerResponse struct {
 
 type ColorMindsResponse struct {
 	Result [][]int `json:"result"`
+}
+
+type MongoDB struct {
+	Client  *mongo.Client
+	Context context.Context
+	Cancel  context.CancelFunc
+	DBName  string
 }
