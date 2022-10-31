@@ -84,12 +84,12 @@ Input: words=mango icecream
 ## Todo
 
 - [x] Support basic REST APIs.
-- [ ] Support Authentication with user for securing the APIs.
+- [x] Support Authentication with user for securing the APIs.
 - [ ] Write the tests for all APIs.
 - [x] Organize the code with packages
 - [ ] Make docs with GoDoc
 - [ ] Building a deployment process 
-- [ ] Connect to a database for users
+- [x] Connect to a database for users
 - [ ] Host the Colourminds API on own server
 - [ ] Allow for rgb inputs
 
